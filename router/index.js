@@ -1,21 +1,33 @@
+require('dotenv').config();
 const express = require('express');
 const router = express.Router();
 
 const todoData = require("../controllers/todoDataController");
-const TodoData = require("../models/TodoData");
+const dynamoClient = require('../db');
+const TableName = process.env.TABLE_NAME;
 
-/* If the server is starting for the very first time, the collection
+/* If the server is starting for the very first time, the table
 will be empty - this will populate the db with a placeholder tododata
 item. */ 
-TodoData.find({})
-  .then((data) => {
-    if (data.length === 0) {
-      TodoData({ order: [], todos: { init: 1 } }).save();
+const populateTableWithPlaceholder = async () => {
+  const params = {
+    TableName,
+    Key: {
+      id: "0"
     }
-  })
-  .catch((error) => {
-    console.error("Error connecting to MongoDB " + error)
-  })
+  }
+  await dynamoClient.scan(params).promise()
+    .then((data) => {
+      if (data.Items.length === 0) {
+        params.Item = { id:"0", order: [], todos: {} };
+        return dynamoClient.put(params).promise();
+      }
+    })
+    .catch((error) => {
+      console.error("Error connecting to MongoDB " + error)
+    });
+}
+populateTableWithPlaceholder();
 
 router.get("/health", (req, res) => {
   res.status(200).send("healthy");
