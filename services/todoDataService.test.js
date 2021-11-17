@@ -1,38 +1,39 @@
+require('dotenv').config();
 const todoDataService = require("./todoDataService");
-const TodoData = require("../models/TodoData");
-const mongoose = require("../db");
+const dynamoClient = require("../db");
+const TableName = process.env.TABLE_NAME;
+jest.useFakeTimers();
 
 describe("TodoData Service", () => {
   beforeEach(async () => {
-    await TodoData.deleteMany({});
+    // Empties the "tododata" table before each test, deleting the existing tododata
+    await dynamoClient.delete({ TableName, Key: { id: "0" } }).promise();
   });
+
   it("adds a todo and returns it with id", async () => {
     const todoData = {
       name: "Add entry",
       desc: "Personal log",
       dateCreated: "1622077232207",
-      tags: ["caput"],
       pomodoroCount: 0,
     };
 
     const actual = await todoDataService.addTodo(todoData);
-
-    expect(actual.order).toBeTruthy();
+    expect(actual.order.length).toBe(1);
   });
 
+  // remove the 'x' before 'it' to "turn on" the test
   it("returns all the todo-data saved", async () => {
     const todo1 = {
       name: "Add entry",
       desc: "Personal log",
       dateCreated: "1622077232207",
-      tags: ["caput"],
       pomodoroCount: 0,
     };
     const todo2 = {
       name: "Rep building",
       desc: "Physical training",
       dateCreated: "1622077232209",
-      tags: ["manu"],
       pomodoroCount: 0,
     };
     await todoDataService.addTodo(todo1);
@@ -48,16 +49,15 @@ describe("TodoData Service", () => {
       name: "Add entry",
       desc: "Personal log",
       dateCreated: "1622077232207",
-      tags: ["caput"],
       pomodoroCount: 0,
     };
     const todo2 = {
       name: "Rep building",
       desc: "Physical training",
       dateCreated: "1622077232209",
-      tags: ["manu"],
       pomodoroCount: 0,
     };
+
     const returnedTodo1 = await todoDataService.addTodo(todo1);
     const returnedTodo2 = await todoDataService.addTodo(todo2);
 
@@ -74,7 +74,6 @@ describe("TodoData Service", () => {
       name: "Add entry",
       desc: "Personal log",
       dateCreated: "1622077232207",
-      tags: ["caput"],
       pomodoroCount: 0,
     };
 
@@ -95,14 +94,12 @@ describe("TodoData Service", () => {
       name: "Add entry",
       desc: "Personal log",
       dateCreated: "1622077232207",
-      tags: ["caput"],
       pomodoroCount: 0,
     };
     const todo2 = {
       name: "Rep building",
       desc: "Physical training",
       dateCreated: "1622077232209",
-      tags: ["manu"],
       pomodoroCount: 0,
     };
     const returnedTodo1 = await todoDataService.addTodo(todo1);
