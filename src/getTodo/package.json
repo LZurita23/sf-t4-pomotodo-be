@@ -1,0 +1,9 @@
+{
+    "name": "GetTodo-item",
+    "version": "1.0.0",
+    "description": "Get a ToDo item from the DynamoDB Table",
+    "main": "src/getTodo/app.js",
+    "dependencies": {
+      "aws-sdk": "^2.823.0"
+    }
+  }
